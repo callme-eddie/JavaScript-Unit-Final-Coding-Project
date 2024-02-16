@@ -1,3 +1,7 @@
+// Enum for suits and values
+const SUITS = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
+const VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace'];
+
 class Card {
     constructor(suit, value) {
         this.suit = suit;
@@ -8,23 +12,19 @@ class Card {
 class Deck {
     constructor() {
         this.cards = [];
-        this.createDeck();
-        this.shuffle();
-    }
-
-    createDeck() {
-        const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
-        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace'];
-
-        for (const suit of suits) {
-            for (const value of values) {
+        // Initialize the deck with 52 cards
+        for (let suit of SUITS) {
+            for (let value of VALUES) {
                 this.cards.push(new Card(suit, value));
             }
         }
     }
 
     shuffle() {
-        // Implement shuffle algorithm
+        for (let i = this.cards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [this.cards[i], this.cards[j]] = [this.cards[j], this.cards[i]];
+        }
     }
 
     dealCard() {
@@ -38,60 +38,67 @@ class Player {
         this.hand = [];
     }
 
+    addCardToHand(card) {
+        this.hand.push(card);
+    }
+
     playCard() {
         return this.hand.pop();
     }
 }
 
-class Game {
-    constructor() {
-        this.deck = new Deck();
-        this.players = [new Player('Player 1'), new Player('Player 2')];
-        this.score = [0, 0];
-    }
+// Initialize the game
+const player1 = new Player('Player 1');
+const player2 = new Player('Player 2');
+const deck = new Deck();
+deck.shuffle();
 
-    play() {
-        this.dealCards();
-
-        while (this.players[0].hand.length > 0) {
-            this.playRound();
-        }
-
-        this.displayResult();
-    }
-
-    dealCards() {
-        for (let i = 0; i < 26; i++) {
-            for (const player of this.players) {
-                player.hand.push(this.deck.dealCard());
-            }
-        }
-    }
-
-    playRound() {
-        const card1 = this.players[0].playCard();
-        const card2 = this.players[1].playCard();
-
-        if (card1.value > card2.value) {
-            this.score[0]++;
-        } else if (card1.value < card2.value) {
-            this.score[1]++;
-        }
-    }
-
-    displayResult() {
-        console.log(`Player 1 score: ${this.score[0]}`);
-        console.log(`Player 2 score: ${this.score[1]}`);
-
-        if (this.score[0] > this.score[1]) {
-            console.log('Player 1 wins!');
-        } else if (this.score[0] < this.score[1]) {
-            console.log('Player 2 wins!');
-        } else {
-            console.log('It\'s a tie!');
-        }
-    }
+// Deal cards to players
+for (let i = 0; i < 26; i++) {
+    player1.addCardToHand(deck.dealCard());
+    player2.addCardToHand(deck.dealCard());
 }
 
-const game = new Game();
-game.play();
+// Play the game
+let round = 1;
+let score1 = 0;
+let score2 = 0;
+
+while (player1.hand.length > 0 && player2.hand.length > 0) {
+    console.log(`Round ${round}`);
+    const card1 = player1.playCard();
+    const card2 = player2.playCard();
+
+    console.log(`${player1.name} plays: ${card1.value} of ${card1.suit}`);
+    console.log(`${player2.name} plays: ${card2.value} of ${card2.suit}`);
+
+    // Determine the winner of the round
+    let winner = null;
+    if (VALUES.indexOf(card1.value) > VALUES.indexOf(card2.value)) {
+        winner = player1;
+        score1++;
+    } else if (VALUES.indexOf(card1.value) < VALUES.indexOf(card2.value)) {
+        winner = player2;
+        score2++;
+    }
+
+    if (winner) {
+        console.log(`${winner.name} wins the round`);
+    } else {
+        console.log('It\'s a tie!');
+    }
+
+    round++;
+}
+
+// Display the final score and declare the winner
+console.log(`Final Score:`);
+console.log(`${player1.name}: ${score1} points`);
+console.log(`${player2.name}: ${score2} points`);
+if (score1 > score2) {
+    console.log(`${player1.name} wins the game!`);
+} else if (score1 < score2) {
+    console.log(`${player2.name} wins the game!`);
+} else {
+    console.log('It\'s a tie!');
+}
